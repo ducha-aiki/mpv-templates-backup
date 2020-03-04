@@ -111,7 +111,16 @@ def calc_sift_descriptor(input: torch.Tensor,
     return out
 
 
-
+def photonorm(x: torch.Tensor):
+    """Function, which normalizes the patches such that the mean intensity value per channel will be 0 and the standard deviation will be 1.0. Values outside the range < -3,3> will be set to -3 or 3 respectively
+    Args:
+        x: (torch.Tensor) shape [BxCHxHxW]
+    
+    Returns:
+        out: (torch.Tensor) shape [BxCHxHxW]
+    """
+    out = x
+    return out
 
 
 
