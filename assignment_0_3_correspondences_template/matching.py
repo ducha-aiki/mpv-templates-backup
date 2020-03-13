@@ -28,7 +28,7 @@ def match_snn(desc1: torch.Tensor, desc2: torch.Tensor, th: float = 0.8):
     
     Return:
         torch.Tensor: indexes of matching descriptors in desc1 and desc2
-        torch.Tensor: L2 desriptor distance
+        torch.Tensor: L2 desriptor distance ratio 1st to 2nd nearest neighbor
 
 
     Shape:
@@ -62,7 +62,7 @@ def match_smnn(desc1: torch.Tensor, desc2: torch.Tensor, th: float = 0.8):
     
     Return:
         torch.Tensor: indexes of matching descriptors in desc1 and desc2
-        torch.Tensor: L2 desriptor distance
+        torch.Tensor: L2 desriptor distance ratio 1st to 2nd nearest neighbor
 
 
     Shape:
