@@ -33,7 +33,7 @@ def match_snn(desc1: torch.Tensor, desc2: torch.Tensor, th: float = 0.8):
 
     Shape:
         - Input :math:`(B1, D)`, :math:`(B2, D)`
-        - Output: :math:`(B1, 2)`, :math:`(B1, 1)`
+        - Output: :math:`(B3, 2)`, :math:`(B3, 1)` where 0 <= B3 <= B1
     '''
     matches_idxs = torch.arange(0, desc2.size(0)).view(-1, 1).repeat(1, 2)
     match_dists = torch.zeros(desc2.size(0),1)
@@ -50,7 +50,7 @@ def match_mnn(desc1: torch.Tensor, desc2: torch.Tensor):
 
     Shape:
         - Input :math:`(B1, D)`, :math:`(B2, D)`
-        - Output: :math:`(min(B1,B2), 2)`, :math:`(min(B1,B2), 1)`
+        - Output: :math:`(B3, 2)`, :math:`(B3, 1)` where 0 <= B3 <= min(B1,B2)
     '''
     matches_idxs = torch.arange(0, desc2.size(0)).view(-1, 1).repeat(1, 2)
     match_dists = torch.zeros(desc2.size(0),1)
@@ -67,7 +67,7 @@ def match_smnn(desc1: torch.Tensor, desc2: torch.Tensor, th: float = 0.8):
 
     Shape:
         - Input :math:`(B1, D)`, :math:`(B2, D)`
-        - Output: :math:`(min(B1,B2), 2)`, :math:`(min(B1,B2), 1)`
+        - Output: :math:`(B3, 2)`, :math:`(B3, 1)`, where 0 <= B3 <= min(B1, B2)
     '''
     matches_idxs = torch.arange(0, desc2.size(0)).view(-1, 1).repeat(1, 2)
     match_dists = torch.zeros(desc2.size(0),1)
