@@ -65,7 +65,7 @@ def estimate_patch_dominant_orientation(x: torch.Tensor, num_angular_bins: int =
     Zero angle points towards right.
     
     Args:
-        x: (torch.Tensor) shape [BxCHxHxW]
+        x: (torch.Tensor) shape (B, 1, PS, PS)
         num_angular_bins: int, default is 36
     
     Returns:
@@ -77,7 +77,7 @@ def estimate_patch_dominant_orientation(x: torch.Tensor, num_angular_bins: int =
 def estimate_patch_affine_shape(x: torch.Tensor):
     """Function, which estimates the patch affine shape by second moment matrix. Returns ellipse parameters: a, b, c
     Args:
-        x: (torch.Tensor) shape [BxCHxHxW]
+        x: (torch.Tensor) shape (B, 1, PS, PS)
     
     Returns:
         ell: (torch.Tensor) in radians shape [Bx3]
