@@ -22,6 +22,15 @@ def get_MAE_imgcorners(h,w, H_gt, H_est):
     error = np.abs(dst - dst_GT).sum(axis=1).mean()
     return error
 
+# After per-pair MAE calculation, it is reduced as following:
+# acc = []
+# for th in [0.1, 1.0, 2.0, 5.0, 10., 15.]:
+#    A = (np.array(MAEs) <= th).astype(np.float32).mean()
+#    acc.append(A)
+# MAA = np.array(acc).mean()
+# print (MAA)
+
+
 
 def matchImages(timg1: torch.Tensor,
                 timg2: torch.Tensor):
