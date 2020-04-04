@@ -58,7 +58,9 @@ def match_mnn(desc1: torch.Tensor, desc2: torch.Tensor):
 
 def match_smnn(desc1: torch.Tensor, desc2: torch.Tensor, th: float = 0.8):
     '''Function, which finds mutual nearest neightbors for each vector in desc1 and desc2,
-    which satisfy first to second nearest neighbor distance <= th check
+    which satisfy first to second nearest neighbor distance <= th check in both directions. 
+    So, it is intersection of match_mnn(d1,d2), match_snn(d1,d2), match_snn(d2,d1)
+    Resulting distance ratio should be maximum over over distance ratio in both directions
     
     Return:
         torch.Tensor: indexes of matching descriptors in desc1 and desc2
