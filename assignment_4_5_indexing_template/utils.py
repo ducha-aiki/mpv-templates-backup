@@ -102,7 +102,7 @@ def get_bbox(img):
     return points
 
 
-def query_and_visu(q_id, visual_words, geometries, bbox_xyxy, DB, idf, options, img_names):
+def query_and_visu(q_id, visual_words, geometries, bbox_xyxy, DB, idf, options, img_names, figsize=(7, 7)):
     t = time.time()
     scores, img_ids, As = query_spatial_verification(
         visual_words[q_id], geometries[q_id], bbox_xyxy, visual_words, geometries, DB, idf, options
@@ -111,16 +111,19 @@ def query_and_visu(q_id, visual_words, geometries, bbox_xyxy, DB, idf, options, 
 
     query_img = PIL.Image.open(os.path.join(options['data_root_dir'], img_names[q_id]))
     visu1 = draw_bbox((np.array(query_img)).astype(np.uint8), bbox_xyxy)
+    plt.figure(figsize=figsize)
+    plt.subplot(3, 2, 1)
     plt.imshow(visu1)
     plt.title("query image, id: {}".format(q_id))
-    plt.show()
+    plt.axis('off')
 
-    for img_id, inl, A in zip(img_ids[:5], scores, As):
+    for i, (img_id, inl, A) in enumerate(zip(img_ids[:5], scores[:5], As[:5])):
+        plt.subplot(3, 2, i+2)
         img = PIL.Image.open(os.path.join(options['data_root_dir'], img_names[img_id]))
         visu = draw_bbox((np.array(img)).astype(np.uint8), bbox_xyxy, A)
-        plt.figure(figsize=(10, 5))
         plt.title('img_id: {}, #inliers: {}'.format(img_id, inl))
         plt.imshow(visu)
+        plt.axis('off')
 
     plt.show()
 
