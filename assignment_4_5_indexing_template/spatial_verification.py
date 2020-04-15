@@ -12,7 +12,7 @@ def get_tentative_correspondencies(
     :param relevant_idxs: [num_imgs, ]
     :param max_tc: maximum tentative correspondences
     :param max_MxN: maximum pairs
-    :return: correspondencies np.ndarray of shape [num_correspondencies x 2]
+    :return: correspondencies np.ndarray of arrays of shape [num_correspondencies x 2]
     """
 
     correspondencies = np.zeros((0, 2), dtype=np.int)
