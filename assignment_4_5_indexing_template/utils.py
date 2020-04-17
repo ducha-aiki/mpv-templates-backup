@@ -121,7 +121,7 @@ def query_and_visu(q_id, visual_words, geometries, bbox_xyxy, DB, idf, options, 
         plt.subplot(3, 2, i+2)
         img = PIL.Image.open(os.path.join(options['data_root_dir'], img_names[img_id]))
         visu = draw_bbox((np.array(img)).astype(np.uint8), bbox_xyxy, A)
-        plt.title('img_id: {}, #inliers: {}'.format(img_id, inl))
+        plt.title('img_id: {}, #inliers: {}'.format(img_id, int(inl)))
         plt.imshow(visu)
         plt.axis('off')
 
