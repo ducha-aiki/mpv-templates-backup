@@ -38,8 +38,8 @@ def nearest(means: np.ndarray, data: np.ndarray) -> (np.ndarray, np.ndarray):
 def create_db(imgs_visual_words: np.ndarray, num_words: int) -> csr_matrix:
     """
     Create database [num_words, num_imgs] of word weights represented as csr_matrix. Details explained at tutorial page.
-    imgs_visual_words is of dimensions [num_imgs, visual_words_in_img]. Number of visual_words_in_img differs for
-    each img.
+    imgs_visual_words is an array of arrays of length num_imgs. Each np.array is a list of visual words in an image.
+    Number of visual_words_in_img differs for each img.
 
     :param imgs_visual_words:
     :param num_words:
@@ -71,8 +71,8 @@ def create_db_tfidf(imgs_visual_words: np.ndarray, num_words: int, idf: np.ndarr
 def get_idf(imgs_visual_words: np.ndarray, num_words: int) -> np.ndarray:
     """
     Create Inverse Document Frequency of shape: [num_words, num_imgs]
-    imgs_visual_words is of dimensions [num_imgs, visual_words_in_img]. Number of visual_words_in_img differs for
-    each img.
+    imgs_visual_words is an array of arrays of length num_imgs. Each np.array is a list of visual words in an image.
+    Number of visual_words_in_img differs for each img.
     idf is of shape: [num_words, 1]
 
     :param imgs_visual_words:
