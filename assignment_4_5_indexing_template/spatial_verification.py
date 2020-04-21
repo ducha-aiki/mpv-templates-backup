@@ -14,8 +14,8 @@ def get_tentative_correspondencies(
     :param max_MxN: maximum pairs
     :return: correspondencies np.ndarray of arrays of shape [num_correspondencies x 2]
     """
-
-    correspondencies = np.zeros((0, 2), dtype=np.int)
+    num_relevant = len(relevant_idxs)
+    correspondencies = np.zeros((num_relevant, ), dtype=np.object)
 
     return correspondencies
 
