@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 import kornia as K
 import typing
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 from PIL import Image
 import os
 from tqdm import tqdm_notebook as tqdm
@@ -67,7 +67,7 @@ def weight_init(m: nn.Module) -> None:
     '''Function, which fills-in weights and biases for convolutional and linear layers'''
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
         #do something here. You can access layer weight or bias by m.weight or m.bias
-        pass #do something
+     pass #do something
     return
 
 def train_and_val_single_epoch(model: torch.nn.Module,
@@ -77,14 +77,18 @@ def train_and_val_single_epoch(model: torch.nn.Module,
                        loss_fn: torch.nn.Module,
                        epoch_idx = 0,
                        lr_scheduler = None,
-                       writer = None) -> torch.nn.Module:
+                       writer = None,
+                       device: torch.device = torch.device('cpu'),
+                       additional_params: Dict = {}) -> torch.nn.Module:
     '''Function, which runs training over a single epoch in the dataloader and returns the model. Do not forget to set the model into train mode and zero_grad() optimizer before backward.'''
-    if epoch_idx == 0:
-        val_acc, val_loss = validate(model, val_loader, loss_fn)
-        if writer is not None:
-            writer.add_scalar("Accuracy/val", val_acc, 0)
-            writer.add_scalar("Loss/val", val_loss, 0)
     model.train()
+    if epoch_idx == 0:
+        val_loss, additional_out = validate(model, val_loader, loss_fn, device, additional_params)
+        model = model.to(device)
+        if writer is not None:
+            if do_acc:
+                writer.add_scalar("Accuracy/val", additional_out['acc'], 0)
+            writer.add_scalar("Loss/val", val_loss, 0)
     for idx, (data, labels) in tqdm(enumerate(train_loader), total=num_batches):
          pass #do something
     return model
@@ -101,15 +105,20 @@ def lr_find(model: torch.nn.Module,
 
 def validate(model: torch.nn.Module,
              val_loader: torch.utils.data.DataLoader,
-             loss_fn: torch.nn.Module) -> float:
+             loss_fn: torch.nn.Module,
+             device: torch.device = torch.device('cpu'),
+             additional_params: Dict = {}) -> Tuple[float, Dict]:
     '''Function, which runs the module over validation set and returns accuracy'''
     print ("Starting validation")
     acc = 0
     loss = 0
+    do_acc = False
+    if 'with_acc' in additional_params:
+        do_acc = additional_params['with_acc']
     for idx, (data, labels) in tqdm(enumerate(val_loader), total=len(val_loader)):
         with torch.no_grad():
              pass #do something
-    return acc, loss
+    return loss, {'acc': acc}
 
 
 
