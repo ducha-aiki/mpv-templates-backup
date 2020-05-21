@@ -56,8 +56,8 @@ def klt_compute_updates(Ts: torch.Tensor,
     Compute KLT update. 
     
     Args: 
-       Ts: torch.Tensor, size (N, 1, H, W): N patches extracted from template image   
-           (note: H == W == 2*windows_hsize+1)
+       Ts: torch.Tensor, size (N, 1, L, L): N patches extracted from template image   
+           (note: L == 2*windows_hsize+1)
        img_next: torch.Tensor, size (1, 1, H, W): next (target) image 
        img_next_gradient: torch.Tensor, size (1, 1, 2, H, W): gradient, as computed 
                 on img_next using function spatial_gradient_first_order 
