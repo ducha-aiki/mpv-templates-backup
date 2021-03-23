@@ -40,8 +40,8 @@ If way above does not work for you (e.g. you are on Windows), try the following 
 ```bash
 conda create --name mpv-assignments-cpu-only python=3.6
 conda activate mpv-assignments-cpu-only
-conda install pytorch torchvision cpuonly -c pytorch
-pip install kornia tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
+conda install pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch
+pip install kornia==0.2.2 tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
 conda install -c conda-forge widgetsnbextension
 conda install -c conda-forge ipywidgets
 ```
@@ -51,8 +51,8 @@ And following for GPU:
 ```bash
 conda create --name mpv-assignments-gpu python=3.6
 conda activate mpv-assignments-gpu
-conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
-pip install kornia tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
+conda install pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch
+pip install kornia==0.2.2 tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
 conda install -c conda-forge widgetsnbextension
 conda install -c conda-forge ipywidgets
 ```
