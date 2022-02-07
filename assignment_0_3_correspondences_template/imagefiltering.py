@@ -139,3 +139,46 @@ def extract_affine_patches(input: torch.Tensor,
     out =  torch.zeros(num_patches, ch, PS, PS)
     return out
 
+
+def extract_antializased_affine_patches(input: torch.Tensor,
+                           A: torch.Tensor,
+                           img_idxs: torch.Tensor,
+                           PS: int = 32,
+                           ext: float = 6.0):
+    """Extract patches defined by affine transformations A from scale pyramid created image tensor X.
+    It runs your implementation of the `extract_affine_patches` function, so it would not work w/o it.
+    
+    Args:
+        input: (torch.Tensor) images, :math:`(B, CH, H, W)`
+        A: (torch.Tensor). :math:`(N, 3, 3)`
+        img_idxs: (torch.Tensor). :math:`(N, 1)` indexes of image in batch, where patch belongs to
+        PS: (int) output patch size in pixels, default = 32
+        ext (float): output patch size in unit vectors. 
+
+    Returns:
+        patches: (torch.Tensor) :math:`(N, CH, PS,PS)`
+    """
+    import kornia
+    b,ch,h,w = input.size()
+    num_patches = A.size(0)
+    scale = (kornia.feature.get_laf_scale(ext * A.unsqueeze(0)[:,:,:2,:]) / float(PS))[0]
+    half: float = 0.5
+    pyr_idx = (scale.log2()).relu().long()
+    cur_img = input
+    cur_pyr_level = 0
+    out = torch.zeros(num_patches, ch, PS, PS).to(device=A.device, dtype=A.dtype)
+    while min(cur_img.size(2), cur_img.size(3)) >= PS:
+        _, ch_cur, h_cur, w_cur = cur_img.size()
+        scale_mask = (pyr_idx == cur_pyr_level).squeeze()
+        if (scale_mask.float().sum()) >= 0:
+            scale_mask = (scale_mask > 0).view(-1)
+            current_A = A[scale_mask]
+            current_A[:, :2, :3] *= (float(h_cur)/float(h))
+            patches = extract_affine_patches(cur_img,
+                                 current_A, 
+                                 img_idxs[scale_mask],
+                                 PS, ext)
+            out.masked_scatter_(scale_mask.view(-1, 1, 1, 1), patches)
+        cur_img = kornia.geometry.pyrdown(cur_img)
+        cur_pyr_level += 1
+    return out
