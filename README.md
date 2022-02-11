@@ -38,10 +38,11 @@ conda env create -f environment-gpu.yml
 If way above does not work for you (e.g. you are on Windows), try the following for CPU:
 
 ```bash
-conda create --name mpv-assignments-cpu-only python=3.6
+conda create --name mpv-assignments-cpu-only python=3.9
 conda activate mpv-assignments-cpu-only
-conda install pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch
-pip install kornia==0.2.2 tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
+pip3 install torch==1.8.2+cpu torchvision==0.9.2+cpu -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+pip3 install kornia==0.6.3 tqdm notebook matplotlib opencv-contrib-python==4.5.3.56 seaborn tensorboard tensorboardX
+pip3 install kornia_moons --no-deps
 conda install -c conda-forge widgetsnbextension
 conda install -c conda-forge ipywidgets
 ```
@@ -49,10 +50,11 @@ conda install -c conda-forge ipywidgets
 And following for GPU:
 
 ```bash
-conda create --name mpv-assignments-gpu python=3.6
+conda create --name mpv-assignments-gpu python=3.9
 conda activate mpv-assignments-gpu
-conda install pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch
-pip install kornia==0.2.2 tqdm notebook matplotlib opencv-contrib-python seaborn tensorboard tensorboardX
+pip3 install torch==1.8.2+cu102 torchvision==0.9.2+cu102  -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+pip3 install kornia==0.6.3 tqdm notebook matplotlib opencv-contrib-python==4.5.3.56 seaborn tensorboard tensorboardX
+pip3 install kornia_moons --no-deps
 conda install -c conda-forge widgetsnbextension
 conda install -c conda-forge ipywidgets
 ```
