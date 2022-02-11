@@ -28,7 +28,7 @@ git merge master
 You can create conda environment with all required packages via  the following for CPU:
 
 ```bash
-conda create --name mpv-assignments-cpu-only python=3.7
+conda create --name mpv-assignments-cpu-only python=3.8
 conda activate mpv-assignments-cpu-only
 pip3 install torch==1.8.2+cpu torchvision==0.9.2+cpu -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
 pip3 install kornia==0.6.3 tqdm notebook matplotlib opencv-contrib-python==4.5.3.56 seaborn tensorboard tensorboardX
@@ -40,7 +40,7 @@ conda install -c conda-forge ipywidgets
 And following for GPU:
 
 ```bash
-conda create --name mpv-assignments-gpu python=3.7
+conda create --name mpv-assignments-gpu python=3.8
 conda activate mpv-assignments-gpu
 pip3 install torch==1.8.2+cu102 torchvision==0.9.2+cu102  -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
 pip3 install kornia==0.6.3 tqdm notebook matplotlib opencv-contrib-python==4.5.3.56 seaborn tensorboard tensorboardX
