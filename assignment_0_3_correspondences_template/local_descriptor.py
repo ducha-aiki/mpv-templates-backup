@@ -4,12 +4,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import typing
-
+from typing import Tuple
 from imagefiltering import * 
 from local_detector import *
 
 
-def affine_from_location(b_ch_d_y_x: torch.Tensor)-> torch.Tensor:
+def affine_from_location(b_ch_d_y_x: torch.Tensor)-> Tuple[torch.Tensor, torch.Tensor]:
     r"""Computes transformation matrix A which transforms point in homogeneous coordinates from canonical coordinate system into image
     from keypoint location (output of scalespace_harris or scalespace_hessian)
     Return:
@@ -26,7 +26,7 @@ def affine_from_location(b_ch_d_y_x: torch.Tensor)-> torch.Tensor:
 
 
 def affine_from_location_and_orientation(b_ch_d_y_x: torch.Tensor,
-                                         ori: torch.Tensor)-> torch.Tensor:
+                                         ori: torch.Tensor)-> Tuple[torch.Tensor, torch.Tensor]:
     r"""Computes transformation matrix A which transforms point in homogeneous coordinates from canonical coordinate system into image
     from keypoint location (output of scalespace_harris or scalespace_hessian). Ori - orientation angle in radians
     Return:
@@ -44,7 +44,7 @@ def affine_from_location_and_orientation(b_ch_d_y_x: torch.Tensor,
 
 def affine_from_location_and_orientation_and_affshape(b_ch_d_y_x: torch.Tensor,
                                                       ori: torch.Tensor,
-                                                      aff_shape: torch.Tensor)-> torch.Tensor:
+                                                      aff_shape: torch.Tensor)-> Tuple[torch.Tensor, torch.Tensor]:
     r"""Computes transformation matrix A which transforms point in homogeneous coordinates from canonical coordinate system into image
     from keypoint location (output of scalespace_harris or scalespace_hessian)
     Return:
