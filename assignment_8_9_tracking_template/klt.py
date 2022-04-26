@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def read_image(idx): 
     fname = os.path.join('data', '%03i.jpg' % idx)
     img = cv2.imread(fname)
-    img = kornia.color.bgr_to_grayscale(kornia.image_to_tensor(img,False))/255.0
+    img = kornia.color.bgr_to_grayscale(kornia.image_to_tensor(img.astype(np.float32),False))/255.0
     return img
 
 def get_patches_subpix(img: torch.Tensor, 

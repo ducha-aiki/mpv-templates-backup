@@ -17,7 +17,7 @@ translations = [ [0, 0],
 def get_test_data(idx): 
     fname = os.path.join('test_data', 'toy_im_%01i.png' % idx)
     img = cv2.imread(fname)
-    img = kornia.color.bgr_to_grayscale(kornia.image_to_tensor(img,False))/255.0
+    img = kornia.color.bgr_to_grayscale(kornia.image_to_tensor(img.astype(np.float32),False))/255.0
     return img, translations[idx] 
 
 
