@@ -5,37 +5,6 @@ import torch.nn.functional as F
 import typing
 from imagefiltering import * 
 
-
-def hessian_response(x: torch.Tensor, sigma: float)-> torch.Tensor:
-    """Computes the determinant of the Hessian matrix.
-    The response map is computed according the following formulation:
-    .. math::
-        R = det(H)
-    where:
-
-    .. math::
-        M = \sum_{(x,y) \in W}
-        \begin{bmatrix}
-            I_{xx} & I_{xy} \\
-            I_{xy} & I_{yy} \\
-        \end{bmatrix}
-
-    Args:
-        x: torch.Tensor: 4d tensor
-        sigma (float): sigma of Gaussian derivative
-
-    Return:
-        torch.Tensor: Hessian response
-
-    Shape:
-       - Input: :math:`(B, C, H, W)`
-       - Output: :math:`(B, C, H, W)`
-    """
-    out = torch.zeros_like(x)
-    return out
-
-
-
 def harris_response(x: torch.Tensor,
                      sigma_d: float,
                      sigma_i: float,
@@ -87,24 +56,6 @@ def nms2d(x: torch.Tensor, th: float = 0):
       - Output: :math:`(B, C, H, W)`
     """
     out = torch.zeros_like(x)
-    return out
-
-def hessian(x: torch.Tensor, sigma: float, th: float = 0):
-    r"""Returns the coordinates of maximum of the Hessian function.
-    Args:
-        x: torch.Tensor: 4d tensor
-        sigma (float): scale
-        th (float): threshold
-
-    Return:
-        torch.Tensor: coordinates of local maxima in format (b,c,h,w)
-
-    Shape:
-      - Input: :math:`(B, C, H, W)`
-      - Output: :math:`(N, 4)`, where N - total number of maxima and 4 is (b,c,h,w) coordinates
-    """
-    # To get coordinates of the responces, you can use torch.nonzero function
-    out = torch.zeros(0,2)
     return out
 
 
@@ -160,22 +111,6 @@ def nms3d(x: torch.Tensor, th: float = 0):
     return out
 
 
-def scalespace_hessian_response(x: torch.Tensor,
-                                n_levels: int = 40,
-                                sigma_step: float = 1.1):
-    r"""First computes scale space and then computes the determinant of Hessian matrix on 
-    Args:
-        x: torch.Tensor: 4d tensor
-        n_levels (int): number of the levels, (default 40)
-        sigma_step (float): blur step, (default 1.1)
-
-    Shape:
-      - Input: :math:`(B, C, H, W)`
-      - Output: :math:`(B, C, N_LEVELS, H, W)`, List(floats)
-    """
-    out = torch.zeros(b, ch, n_levels, h, w), [1.0 for x in range(n_levels)]
-    return out
-
 
 def scalespace_harris_response(x: torch.Tensor,
                                 n_levels: int = 40,
@@ -193,26 +128,6 @@ def scalespace_harris_response(x: torch.Tensor,
     out = torch.zeros_like(x)
     return out
 
-
-def scalespace_hessian(x: torch.Tensor,
-                       th: float = 0,
-                       n_levels: int = 40,
-                       sigma_step: float = 1.1):
-    r"""Returns the coordinates of maximum of the Hessian function.
-    Args:
-        x: torch.Tensor: 4d tensor
-        th (float): threshold
-        n_levels (int): number of scale space levels (default 40)
-        sigma_step (float): blur step, (default 1.1)
-        
-    Shape:
-      - Input: :math:`(B, C, H, W)`
-      - Output: :math:`(N, 5)`, where N - total number of maxima and 5 is (b,c,d,h,w) coordinates
-    """
-    # To get coordinates of the responces, you can use torch.nonzero function
-    # Don't forget to convert scale index to scale value with use of sigma
-    out = torch.zeros(0,3)
-    return out
 
 
 def scalespace_harris(x: torch.Tensor,
