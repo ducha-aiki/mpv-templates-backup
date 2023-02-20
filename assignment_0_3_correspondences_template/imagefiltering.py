@@ -41,7 +41,9 @@ def filter2d(x: torch.Tensor, kernel: torch.Tensor) -> torch.Tensor:
         as the input.
     """
     out =  x
-    out =  x
+    ## Do not forget about flipping the kernel!
+    ## See in details here https://towardsdatascience.com/convolution-vs-correlation-af868b6b4fb5
+    
     return out
 
 def gaussian_filter2d(x: torch.Tensor, sigma: float) -> torch.Tensor:
@@ -59,7 +61,7 @@ def gaussian_filter2d(x: torch.Tensor, sigma: float) -> torch.Tensor:
 
     """ 
     ksize = get_gausskernel_size(sigma)
-    out =  x
+    out = x
     return out
 
 
@@ -79,22 +81,6 @@ def spatial_gradient_first_order(x: torch.Tensor, sigma: float) -> torch.Tensor:
     out =  torch.zeros(b,c,2,h,w)
     return out
 
-
-def spatial_gradient_second_order(x: torch.Tensor, sigma: float) -> torch.Tensor:
-    r"""Computes the second order image derivative in xx, xy, yy directions using Gaussian derivative
-
-    Return:
-        torch.Tensor: spatial gradients
-
-    Shape:
-        - Input: :math:`(B, C, H, W)`
-        - Output: :math:`(B, C, 3, H, W)`
-
-    """
-    b, c, h, w = x.shape
-    ksize = get_gausskernel_size(sigma)
-    out =  torch.zeros(b,c,3,h,w)
-    return out
 
 def affine(center: torch.Tensor, unitx: torch.Tensor, unity: torch.Tensor) -> torch.Tensor:
     r"""Computes transformation matrix A which transforms point in homogeneous coordinates from canonical coordinate system into image
@@ -147,6 +133,7 @@ def extract_antializased_affine_patches(input: torch.Tensor,
                            ext: float = 6.0):
     """Extract patches defined by affine transformations A from scale pyramid created image tensor X.
     It runs your implementation of the `extract_affine_patches` function, so it would not work w/o it.
+    You do not need to ever modify this finction, implement `extract_affine_patches` instead.
     
     Args:
         input: (torch.Tensor) images, :math:`(B, CH, H, W)`
