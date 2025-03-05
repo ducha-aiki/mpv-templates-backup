@@ -4,7 +4,7 @@ The recommended way of using the templates is as follows.
 
 First, you clone the repository:
 ```bash
-git clone 
+git clone https://github.com/ducha-aiki/mpv-templates-backup.git
 ```
 
 Then, you create a new branch for your solutions:
