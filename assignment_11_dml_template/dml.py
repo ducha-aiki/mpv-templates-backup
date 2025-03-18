@@ -195,9 +195,6 @@ def train(model, train_loader, optimizer, margin = 0.5):
         # compute the required distances - your code
         # ........
         # ........
-
-        distances_pos = (v2 - v1).pow(2).sum(1)
-        distances_neg = (v3 - v1).pow(2).sum(1)    
         loss = triplet_loss(distances_pos, distances_neg, margin)
 
         # update the network with back-propagation - your code
