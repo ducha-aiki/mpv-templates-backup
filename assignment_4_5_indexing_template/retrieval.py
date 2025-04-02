@@ -131,14 +131,7 @@ def ransac_affine(query_geometry, shortlist_geometry, correspondences, inlier_th
             # ....
             # ....
             # number_of_inliers = ....
-            # 
-
-            if number_of_inliers > best_score:
-                best_score = number_of_inliers
-                A_best = A
-
-        inliers_counts[k] = best_score
-        transformations[k] = A_best
+            #
 
     return transformations, inliers_counts
 
@@ -162,8 +155,6 @@ def search_spatial_verification(query_visual_words, query_geometry, candidatelis
 
 ### ========================================================
 def main():
-    
-    include_lab_assignment_2 = False # set to True for the second part - spatial verif.
 
     with open('mpv_lab_retrieval_data.pkl', 'rb') as handle:
         p = pickle.load(handle)     
@@ -190,29 +181,28 @@ def main():
     print("query performed in {:.3f}s".format(time.time() - t))
     print(ranked_img_ids[:10], scores[:10])
 
-    if include_lab_assignment_2:
-        bbox_xyxy = [350, 200, 700, 600] # pick a bounding box
-        query_visual_words_inbox, query_geometry_inbox = get_query_data(visual_words, geometries, q_id, bbox_xyxy)
-        t = time.time()
-        ranked_img_ids, scores = retrieve(db, query_visual_words_inbox, idf)
-        print("query-cropped performed in {:.3f}s".format(time.time() - t))
-        print(ranked_img_ids[:10], scores[:10])
+    bbox_xyxy = [350, 200, 700, 600] # pick a bounding box
+    query_visual_words_inbox, query_geometry_inbox = get_query_data(visual_words, geometries, q_id, bbox_xyxy)
+    t = time.time()
+    ranked_img_ids, scores = retrieve(db, query_visual_words_inbox, idf)
+    print("query-cropped performed in {:.3f}s".format(time.time() - t))
+    print(ranked_img_ids[:10], scores[:10])
 
-        shortlist_ids = ranked_img_ids[:shortlist_size]  # apply SP only to most similar images
-        shortlist_visual_word, shortlist_geometry = get_shortlist_data(visual_words, geometries, shortlist_ids)
+    shortlist_ids = ranked_img_ids[:shortlist_size]  # apply SP only to most similar images
+    shortlist_visual_word, shortlist_geometry = get_shortlist_data(visual_words, geometries, shortlist_ids)
 
-        t = time.time()
-        scores_sp, transformations = search_spatial_verification(query_visual_words_inbox, query_geometry_inbox, shortlist_visual_word, shortlist_geometry, inlier_threshold)
-        print("spatial verification performed in {:.3f}s".format(time.time() - t))
+    t = time.time()
+    scores_sp, transformations = search_spatial_verification(query_visual_words_inbox, query_geometry_inbox, shortlist_visual_word, shortlist_geometry, inlier_threshold)
+    print("spatial verification performed in {:.3f}s".format(time.time() - t))
 
-        idxs = np.argsort(-scores_sp)
-        scores_sp = scores_sp[idxs]
-        transformations = transformations[idxs]
-        top_img_ids = ranked_img_ids[idxs]
-        print(top_img_ids[:10], scores_sp[:10])
+    idxs = np.argsort(-scores_sp)
+    scores_sp = scores_sp[idxs]
+    transformations = transformations[idxs]
+    top_img_ids = ranked_img_ids[idxs]
+    print(top_img_ids[:10], scores_sp[:10])
 
-        # will create fig.png - check it out
-        vis_results(img_names, q_id, bbox_xyxy, top_img_ids, scores_sp, transformations)
+    # will create fig.png - check it out
+    vis_results(img_names, q_id, bbox_xyxy, top_img_ids, scores_sp, transformations)
 
 
 
