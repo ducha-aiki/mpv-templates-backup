@@ -1,43 +1,41 @@
 import torch, torchvision
 from torchvision import transforms
-from torchvision.models import ResNet18_Weights
 import torch.optim as optim, torch.nn as nn, torch.nn.functional as F, torch.utils.data as data
-import os, random, copy, pdb, numpy as np, ssl
+import numpy as np, ssl
 from PIL import Image
-from scipy.spatial.distance import cdist
-from numpy import loadtxt
 
 ssl._create_default_https_context = ssl._create_unverified_context # fix needed for downloading resnet weights
 device = torch.device('cuda:0') # gpu training is typically much faster if available
 # device = torch.device('cpu')
+batch_size = 300
 
 # read the dataset files and return the list of images and list of class labels
-def readCUB(kept_labels, n=1000):
-        cub_folder = 'CUB_200_2011/'
-        f = open(cub_folder + "images.txt", 'r')
-        cub_imgfn = [a.split(' ')[::-1] for a in f.read().split('\n')]
-        cub_label = loadtxt(cub_folder + "image_class_labels.txt", delimiter=" ", unpack=False)[:,1].astype(int) - 1
-        idx = np.isin(cub_label, kept_labels).nonzero()[0]
-        cub_imgfn = [cub_imgfn[x] for x in idx]
-        cub_label = cub_label[idx]
-        
-        idx = []
-        for i in range(0,max(cub_label)+1):
-            idx = idx + ([x for (x,val) in enumerate(cub_label) if val == i][0:n])        
-        cub_imgfn = [cub_imgfn[x] for x in idx]
-        cub_label = cub_label[idx]
+def readCUB(n=1000):
+    cub_folder = 'CUB_200_2011/'
+    f = open(cub_folder + "images.txt", 'r')
+    cub_imgfn = [a.split(' ')[::-1] for a in f.read().split('\n')][:-1]
+    cub_imgfn = np.array([(cub_folder + '/images/' + x[0]) for x in cub_imgfn])
+    cub_label = np.loadtxt(cub_folder + "image_class_labels.txt", delimiter=" ", unpack=False)[:, 1].astype(int)
+    cub_label = np.array(cub_label)
 
-        cub_imgfn = [(cub_folder+'/images/'+x[0]) for x in cub_imgfn]
-        cub_label = np.array(cub_label)
+    train_mask = cub_label <= 100
+    train_imgfn, train_label = cub_imgfn[train_mask], cub_label[train_mask]
 
-        return cub_imgfn, cub_label
+    idx = []
+    for i in range(0, max(train_label) + 1):
+        idx = idx + ([x for (x, val) in enumerate(train_label) if val == i][0:n])
+    cub_train = ([train_imgfn[x] for x in idx], train_label[idx])
+
+    val_mask = (cub_label > 100) & (cub_label <= 150)
+    cub_val = (cub_imgfn[val_mask], cub_label[val_mask])
+
+    return cub_train, cub_val
 
 # dataset structure used for testing/evaluation
 class CUB(data.Dataset):
     
-    def __init__(self, kept_labels, transform = None, n=1000):
-
-        self.img, self.labels = readCUB(kept_labels, n)
+    def __init__(self, data, transform = None):
+        self.img, self.labels = data
         self.transform = transform
 
     def __getitem__(self, index):
@@ -53,35 +51,18 @@ class CUB(data.Dataset):
 # dataset structure used for training
 class CUBtriplet(data.Dataset):
     
-    def __init__(self, kept_labels, transform = None, n=1000):
+    def __init__(self, data, transform = None):
 
-        self.img, self.labels = readCUB(kept_labels, n)
+        self.img, self.labels = data
         self.transform = transform
-        self.class_idx = dict()
-        # for l in kept_labels: self.class_idx[l] = np.where(self.labels==l)[0] # indices of images for every class
+        self.class_idx = np.split(np.arange(len(self.labels)), np.unique(self.labels, return_index=True)[1])
         self.hardneg = np.zeros(self.__len__(), np.uint32)
-        
-    # this is used to iterate over images and extract descriptors for hard-negative mining        
-    def getimg(self, index):
-        img = Image.open(self.img[index]).convert('RGB')
-        img = self.transform(img)
-        label =  self.labels[index].item()
-        return img, label
 
-    # extract the representation of all training images
-    def extract_images(self, model):
-        model.eval()
-        des = torch.Tensor(self.__len__(), model.dim)
-        labels = torch.LongTensor(self.__len__())
-        for i in range(self.__len__()):
-            (data, target) = self.getimg(i)
-            with torch.no_grad():
-                des[i] = model(data.to(device).unsqueeze(0)).cpu()
-            labels[i] = target
-        return des, labels
 
     def minehard(self, model):
-        des, labels = self.extract_images(model)
+        temp_loader = torch.utils.data.DataLoader(CUB((self.img, self.labels), transform=self.transform),
+                                                  batch_size=batch_size, shuffle=False)
+        des, labels = extract_images(model, temp_loader)
         # mine hard negatives and store them in "self.hardneg" - your code
         # ........
         # ........
@@ -110,6 +91,18 @@ class CUBtriplet(data.Dataset):
     def __len__(self):
         return len(self.img)
 
+def extract_images(model, loader):
+    model.eval()
+
+    des, labels = [], []
+    with torch.no_grad():
+        for data, target in loader:
+            des.append(model(data.to(device)))
+            labels.append(target)
+
+    des = torch.cat(des, dim=0)
+    labels = torch.cat(labels, dim=0)
+    return des, labels
 
 class GDextractor(nn.Module):
     """
@@ -118,13 +111,16 @@ class GDextractor(nn.Module):
     def __init__(self, input_net, dim, usemax = False):
         """
         Contructor takes a CNN as input
-        input_net: a ResNet
+        input_net: a MobileNetV2 or ResNet18
         dim: output embedding dimensionality
-        usemax: do MAC is true, otherwise SPoC
+        usemax: do MAC (max pooling) if true, otherwise SPoC (average pooling)
         """
         super(GDextractor, self).__init__()
         self.dim = dim
         self.usemax = usemax
+        input_net = list(input_net.children())[:-1]
+        self.net = nn.Sequential(*input_net)
+        self.fc = nn.Linear(1280, dim)
 
         # create the network structure by using part of input_net - your code
         # ........
@@ -151,23 +147,16 @@ def test(model, test_loader):
     """
 
     model.eval()
-    des = torch.Tensor()
-    labels = torch.LongTensor()
-    for batch_idx, (data, target) in enumerate(test_loader):
-        with torch.no_grad():
-            des = torch.cat((des, model(data.to(device)).cpu()))
-        labels = torch.cat((labels, target))
-    
-    # compute all pair-wise distances
-    cdistances = cdist(des.data.numpy(), des.data.numpy(), 'euclidean')
+    des, labels = extract_images(model, test_loader)
+    # Calculate all pairwise similarities
+    similarities = des @ des.t()
+    similarities.fill_diagonal_(float('-inf'))
 
-    # sort distances and see if the label of the top-ranked image is correct
-    prec = np.zeros(len(cdistances))
-    for i in range(0,len(cdistances)):
-        idx = np.argsort(cdistances[i])[1] # skip 1st image - is the query itself
-        prec[i] = ((labels[idx]==labels[i])*1.0).mean().item()
-     
-    return prec.mean()
+    # sort similarities and see if the label of the top-ranked image is correct
+    nn_inds = torch.argmax(similarities, dim=1).cpu()
+    correct_matches = (labels == labels[nn_inds]).sum().item()
+
+    return correct_matches / des.shape[0]
 
 
 def triplet_loss(distances_pos, distances_neg, margin):
@@ -184,7 +173,7 @@ def train(model, train_loader, optimizer, margin = 0.5):
     margin: triplet loss margin
     """
     
-    model.train() # first put the model intro training mode
+    model.train() # first put the model into training mode
     model.apply(set_batchnorm_eval) # do not update the Batch-Norm running avg/std - helps to get improvements in a couple of epochs
     total_loss = 0
     
@@ -236,33 +225,36 @@ def main():
     lr=0.00001
     margin=.1
 
-    trainset = CUBtriplet(kept_labels = np.arange(100), n=20, transform = transform_train) # keep only 20 images per class
-    valset = CUB(kept_labels = np.arange(100,150), transform = transform_test)
+    cub_train, cub_val = readCUB(n=20) # keep only n images per class, lower number speeds up training
+    trainset = CUBtriplet(cub_train, transform = transform_train)
+    valset = CUB(cub_val, transform = transform_test)
 
     torch.manual_seed(0); np.random.seed(0)
-    trainloader = torch.utils.data.DataLoader(trainset,batch_size=64, shuffle=True) # 64 triplets per batch
-    valloader = torch.utils.data.DataLoader(valset,batch_size=128, shuffle=False)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size // 3, shuffle=True)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=False)
 
-    pre_model = torchvision.models.resnet18(weights = ResNet18_Weights.DEFAULT) # load pre-trained ResNet18
-    dim = 512  ## dimensionality of the global descriptor - defined according to the ResNet18 architecture
+    # pre_model = torchvision.models.resnet18(pretrained=True) # load pre-trained ResNet18
+    pre_model = torchvision.models.mobilenet_v2(pretrained=True) # load pre-trained MobileNetV2
+    dim = 512  # dimensionality of the global descriptor
     model = GDextractor(pre_model, dim) # construct the network that extracts descriptors
     model.to(device)
 
     best_mp = test(model, valloader)
     torch.save({'epoch': 0,'val_mp': best_mp,'state_dict': model.state_dict()}, 'bestmodel.pth.tar')
-    print('Before training, precision@1: {}'.format(best_mp), flush=True)
+    print('Before training, precision@1: {}'.format(np.round(best_mp, 4)), flush=True)
 
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
+    print('Mining...')
+    trainset.minehard(model)
     print('Training...')
     for epoch in range(1, 10 + 1):
-            trainset.minehard(model)
             print('Epoch {}'.format(epoch), flush=True)
             train(model, trainloader, optimizer, margin)
 
             if epoch % 1 == 0:
                 mp = test(model, valloader)
-                print('Epoch {}, precision@1: {}'.format(epoch, mp), flush=True)
+                print('Epoch {}, precision@1: {}'.format(epoch, np.round(mp, 4)), flush=True)
 
                 if mp > best_mp:
                     best_mp = mp
