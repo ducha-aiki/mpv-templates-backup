@@ -50,11 +50,11 @@ def extract_images(model, loader):
     return des, labels
 
 
-class Encoder(nn.Module):
-    """ Encoder Network: Backbone + Projection head (MLP) """
+class SimCLR(nn.Module):
+    """ SimCLR Network: Encoder + Projection head (MLP) """
     def __init__(self, backbone, backbone_dim=1280, projection_size=128, projection_hidden_size=2048):
         super().__init__()
-        self.backbone = nn.Sequential(*list(backbone.children())[:-1], nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())
+        self.encoder = nn.Sequential(*list(backbone.children())[:-1], nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())
 
         # implement the MLP projection head - your code
         # ........
@@ -76,7 +76,7 @@ def test(model, train_loader_knn, test_loader_knn, knn=1):
     k-NN classification of the given model
 
     Args:
-        model: backbone of the encoder
+        model: backbone (encoder)
         train_loader_knn: DataLoader for the support set of the test dataset
         test_loader_knn: DataLoader for the query set of the test dataset
         knn: number of nearest neighbors to use for classification
@@ -85,10 +85,10 @@ def test(model, train_loader_knn, test_loader_knn, knn=1):
         accuracy: a single value [0, 1] showcasing the model's performance
     """
 
-    encoder.eval()
+    model.eval()
 
-    train_features, train_labels = extract_images(encoder, train_loader_knn)
-    test_features, test_labels = extract_images(encoder, test_loader_knn)
+    train_features, train_labels = extract_images(model, train_loader_knn)
+    test_features, test_labels = extract_images(model, test_loader_knn)
 
     # find the label of the 1-NN per test sample and compute accuracy - your code
     # ........
@@ -117,14 +117,14 @@ def xent_loss(z1, z2, temperature=0.1):
     return loss
 
 
-def train(encoder, train_loader, optimizer, scheduler, temperature):
+def train(model, train_loader, optimizer, scheduler, temperature):
     """
     Training loop for one epoch
 
     Args:
-        encoder: Encoder class wrapper for the backbone
+        model: Class wrapper for the SimCLR architecture
         train_loader: DataLoader for the training set
-        optimizer: optimizer for the encoder
+        optimizer: optimizer for the model parameters
         scheduler: learning rate scheduler
         temperature: temperature parameter of the loss
 
@@ -167,23 +167,23 @@ def main():
     knn_test_loader = torch.utils.data.DataLoader(cifar_test, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     backbone = torchvision.models.mobilenet_v2()
-    encoder = Encoder(backbone).to(device)
+    model = SimCLR(backbone).to(device)
 
-    initial_knn_acc = test(encoder.backbone, knn_train_loader, knn_test_loader)
+    initial_knn_acc = test(model.backbone, knn_train_loader, knn_test_loader)
     print(f'Before training, CIFAR-10 1-NN accuracy: {initial_knn_acc:.4f}', flush=True)
     best_knn_acc = initial_knn_acc
 
-    optimizer = optim.AdamW(list(encoder.parameters()), lr=lr, weight_decay=1e-6)
+    optimizer = optim.AdamW(list(model.parameters()), lr=lr, weight_decay=1e-6)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs * len(trainloader))
 
     ## --- Training Loop ---
     for epoch in range(1, epochs + 1):
         print(f'Epoch {epoch}', flush=True)
-        loss = train(encoder, trainloader, optimizer, scheduler, temperature)
+        loss = train(model, trainloader, optimizer, scheduler, temperature)
         print(f'Epoch {epoch} average loss: {loss:.4f}')
 
         if epoch % 2 == 0 or epoch == epochs:
-            knn_acc = test(encoder.backbone, knn_train_loader, knn_test_loader)
+            knn_acc = test(model.encoder, knn_train_loader, knn_test_loader)
             print(f'Epoch {epoch}, CIFAR-10 1-NN accuracy: {knn_acc:.4f}', flush=True)
 
             # If the validation accuracy is higher, save the best performing model so far
@@ -191,7 +191,7 @@ def main():
                 best_knn_acc = knn_acc
                 torch.save({'epoch': epoch,
                             'knn_acc': knn_acc,
-                            'state_dict': encoder.backbone.state_dict()},
+                            'state_dict': model.encoder.state_dict()},
                             'model.pth')
 if __name__ == '__main__':
     main()
