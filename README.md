@@ -25,13 +25,14 @@ git checkout solutions
 git merge master
 ```
 
-You can create conda environment with all required packages via  the following for CPU:
+You can create conda environment with all required packages via the following for CPU:
 
 ```bash
-conda create --name mpv-assignments-cpu-only python=3.10
-conda activate mpv-assignments-cpu-only
-pip3 install torch==1.12.1+cpu torchvision==0.13.1+cpu torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cpu
-pip3 install kornia==0.6.10 tqdm notebook matplotlib opencv-contrib-python==4.7.0.68 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
+conda create --name mpv-assignments python=3.13
+conda activate mpv-assignments
+# CPU-only wheels (adjust if a different wheel tag is required for your platform)
+pip3 install torch==2.8.0 torchvision==0.23.0
+pip3 install kornia==0.8.2 tqdm notebook matplotlib opencv-contrib-python==4.13.0.92 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
 pip3 install kornia_moons --no-deps
 ```
 
@@ -64,27 +65,26 @@ Mon Feb 20 16:49:46 2023
 |  No running processes found                                                 |
 +-----------------------------------------------------------------------------+
 ```
-In the example above, the CUDA version is 11.2, so you should use `–extra-index-url https://download.pytorch.org/whl/cu112`
+In the example above, the CUDA version is 11.2, so you should use `–extra-index-url https://download.pytorch.org/whl/cu128`
 
 
 
 ```bash
-conda create --name mpv-assignments-gpu python=3.10
+conda create --name mpv-assignments-gpu python=3.13
 conda activate mpv-assignments-gpu
-pip3 install torch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu112
-pip3 install kornia==0.6.10 tqdm notebook matplotlib opencv-contrib-python==4.7.0.68 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
+# Change the CUDA wheel tag to match your installed CUDA version (e.g. cu128)
+pip3 install torch==2.8.0 torchvision==0.23.0 --extra-index-url https://download.pytorch.org/whl/cu128
+pip3 install kornia==0.8.2 tqdm notebook matplotlib opencv-contrib-python==4.13.0.92 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
 pip3 install kornia_moons --no-deps
 ```
 
-For Apple Silicon devices (M1, M2 family) use:
+For Apple Silicon devices (M1 and so on, family) use:
 
 ```bash
-conda create --name mpv-assignments-cpu-only python=3.10
-conda activate mpv-assignments-cpu-only
-conda install -c apple tensorflow-deps
-pip3 install tensorflow-macos tensorflow-metal
-pip3 install torch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cpu
-pip3 install kornia==0.6.10 tqdm notebook matplotlib opencv-contrib-python==4.7.0.68 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
+conda create --name mpv-assignments python=3.13
+conda activate mpv-assignments
+pip3 install torch==2.8.0 torchvision==0.23.0
+pip3 install kornia==0.8.2 tqdm notebook matplotlib opencv-contrib-python==4.13.0.92 seaborn tensorboard tensorboardX ipywidgets widgetsnbextension
 pip3 install kornia_moons --no-deps
 ```
 
